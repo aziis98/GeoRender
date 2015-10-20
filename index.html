@@ -4,10 +4,27 @@
         <title>GeoRender</title>
 
         <link rel="stylesheet" href="style.css">
-        <script src="node_modules/angular/angular.min.js" charset="utf-8"></script>
-        <script src="out/app.js" charset="utf-8"></script>
+
+        <script src="out/app.js"></script>
     </head>
     <body ng-controller="mainController">
+        <div class="ui">
+            <div class="groupbar">
+                <div class="group" ng-repeat="group in groups" ng-click="setMenu(group.id)">
+                    <img ng-src="assets/tools/{{group.img}}"/>
+                </div>
+            </div>
 
+            <div class="toolbar">
+                <div class="tool" ng-repeat="tool in menu.current">
+                    <img ng-src="assets/tools/{{tool.img}}">
+                    <span>{{tool.label}}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="canvas">
+            <!-- Two.js canvas -->
+        </div>
     </body>
 </html>

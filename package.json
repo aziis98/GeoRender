@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "A geometrical drawing app based on Electron",
   "repository": {
-      "type": "git",
-      "url": "https://github.com/aziis98/GeoRender.git"
+    "type": "git",
+    "url": "https://github.com/aziis98/GeoRender.git"
   },
   "main": "main.js",
   "scripts": {
@@ -19,6 +19,7 @@
   "license": "ISC",
   "dependencies": {
     "angular": "^1.4.7",
+    "jquery": "^2.1.4",
     "twojs-browserify": "^0.2.0"
   },
   "devDependencies": {

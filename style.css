@@ -11,3 +11,63 @@ body {
 	padding: 0px;
     background: #E6E6E6;
 }
+
+.groupbar, .toolbar {
+	width: 50px;
+
+	background: white;
+	margin-top: 10px;
+
+	border-top: 1px solid #F0F0F0;
+	border-right: 1px solid #F0F0F0;
+
+	float: left;
+}
+
+.toolbar {
+	text-align: center;
+	width: 100px;
+}
+
+.tool {
+	display: block;
+	height: 50px;
+	font-size: 10px;
+}
+
+.tool > img {
+	display: block;
+	height: 40px;
+	margin: 0 auto;
+}
+
+.tool > span {
+	display: block;
+	margin-top: -5px;
+	cursor: default;
+}
+
+.group:hover, .tool:hover {
+	background: rgba(222, 222, 222, 0.43);;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --------------------- */
