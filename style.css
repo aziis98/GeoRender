@@ -12,6 +12,11 @@ body {
     background: #E6E6E6;
 }
 
+.ui {
+	position: relative;
+	height: 100vh;
+}
+
 .groupbar, .toolbar {
 	width: 50px;
 
@@ -20,13 +25,61 @@ body {
 
 	border-top: 1px solid #F0F0F0;
 	border-right: 1px solid #F0F0F0;
+	box-sizing: border-box;
 
 	float: left;
+}
+
+.groupbar {
+	padding-top: 15px;
+	padding-bottom: 400px;
 }
 
 .toolbar {
 	text-align: center;
 	width: 100px;
+	margin-top: 25px;
+	height: 450px;
+}
+
+@keyframes toolbar_open {
+	from { width : 0; }
+	to { width: 100px; }
+}
+
+@keyframes toolbar_close {
+	from { width : 100px; }
+	to { width: 0; }
+}
+
+@keyframes tool_open {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes tool_close {
+	0% { opacity: 1; }
+	100% { opacity: 0; }
+}
+
+.toolbar.ng-enter {
+	animation: toolbar_open 150ms linear;
+}
+
+.toolbar.ng-leave {
+	animation: toolbar_close 150ms linear;
+}
+
+.toolbar.ng-enter * {
+	animation: tool_open 150ms linear;
+}
+
+.toolbar.ng-leave * {
+	animation: tool_close 150ms linear;
+}
+
+.group {
+	height: 50px;
 }
 
 .tool {
@@ -51,6 +104,17 @@ body {
 	background: rgba(222, 222, 222, 0.43);;
 }
 
+.informator {
+	position: absolute;
+	width: 100vw;
+	height: 25px;
+	box-sizing: border-box;
+	background: white;
+	bottom: 0;
+	border-top: 1px solid #F0F0F0;
+	font-size: 14px;
+    padding: 2px 7px;
+}
 
 
 

@@ -15,11 +15,16 @@
                 </div>
             </div>
 
-            <div class="toolbar">
-                <div class="tool" ng-repeat="tool in menu.current">
+            <div class="toolbar" ng-if="menu.current.length > 0" ng-animate>
+                <div class="tool" ng-repeat="tool in menu.current" ng-mouseover="setInfo(tool.info)" ng-mouseleave="setInfo('')">
                     <img ng-src="assets/tools/{{tool.img}}">
                     <span>{{tool.label}}</span>
                 </div>
+            </div>
+
+            <div class="informator" ng-if="informator != ''">
+                <span class="left" ng-bind="informator"></span>
+                <span class="right"></span>
             </div>
         </div>
 
