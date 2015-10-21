@@ -12,12 +12,35 @@ body {
     background: #E6E6E6;
 }
 
+span {
+	cursor: default;
+}
+
+span .button {
+	border-left: 1px solid #C5C5C5;
+	border-right: 1px solid #C5C5C5;
+	padding: 3px;
+	margin: 0px 10px;
+}
+
+span .button:hover {
+	background: rgba(222, 222, 222, 0.9);
+}
+
+span.win-title {
+	font-size: 18px;
+	border-bottom: 1px solid #f0f0f0;
+	padding: 5px;
+	text-align: center;
+	display: block;
+}
+
 .ui {
 	position: relative;
 	height: 100vh;
 }
 
-.groupbar, .toolbar {
+.groupbar, .toolbar, .primitives {
 	width: 50px;
 
 	background: white;
@@ -40,6 +63,19 @@ body {
 	width: 100px;
 	margin-top: 25px;
 	height: 450px;
+}
+
+.primitives {
+	height: 650px;
+	border-left: 1px solid #F0F0F0;
+	float: right;
+	width: 200px;
+}
+
+.primitives ul {
+	list-style-type: none;
+	font-size: 13px;
+	margin-left: -20px;
 }
 
 @keyframes toolbar_open {
@@ -97,11 +133,10 @@ body {
 .tool > span {
 	display: block;
 	margin-top: -5px;
-	cursor: default;
 }
 
 .group:hover, .tool:hover {
-	background: rgba(222, 222, 222, 0.43);;
+	background: rgba(222, 222, 222, 0.43);
 }
 
 .informator {
@@ -114,6 +149,10 @@ body {
 	border-top: 1px solid #F0F0F0;
 	font-size: 14px;
     padding: 2px 7px;
+}
+
+.informator .right {
+	float: right;
 }
 
 #geomcanvas {

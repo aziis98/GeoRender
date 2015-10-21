@@ -1,4 +1,4 @@
-var $, GeoPlane, Graphics, Menu, MenuItem, PPoint, Two, angular, geoRender, geometrics, ipc, ngAnimate, plane, remote, render;
+var $, GeoPlane, Graphics, Menu, MenuItem, PPoint, Two, angular, geoRender, geometrics, ipc, mouse, ngAnimate, plane, remote, toolHandlers, translation;
 
 remote = require('remote');
 
@@ -26,6 +26,54 @@ Two = require('twojs-browserify');
 
 plane = new GeoPlane;
 
+mouse = {
+  x: 0,
+  y: 0,
+  button: 0
+};
+
+translation = {
+  x: 0,
+  y: 0
+};
+
+toolHandlers = {
+  'none': {
+    doHighLight: function(primitive) {
+      return primitive instanceof PPoint && primitive._dist <= 7;
+    }
+  },
+  'point': {
+    handler: function() {
+      plane.addPrimitive(new PPoint(mouse.x - translation.x, mouse.y - translation.y));
+      return 'none';
+    },
+    doHighLight: function(primitive) {
+      return false;
+    },
+    complete: function() {
+      return 'none';
+    }
+  },
+  'point-centroid': {
+    handler: function() {
+      if (toolHandlers._nearest._dist <= 7) {
+        toolHandlers._centroidbuff.push(toolHandlers._nearest);
+      }
+      return 'point-centroid';
+    },
+    doHighLight: function(primitive) {
+      return primitive instanceof PPoint && primitive._dist <= 7;
+    },
+    complete: function() {
+      plane.addPrimitive(PPoint.getCentroid(toolHandlers._centroidbuff));
+      toolHandlers._centroidbuff = [];
+      return 'none';
+    }
+  },
+  _centroidbuff: []
+};
+
 geoRender = angular.module('geoRender', [ngAnimate]);
 
 geoRender.controller('mainController', function($scope) {
@@ -36,7 +84,9 @@ geoRender.controller('mainController', function($scope) {
       submenu: [
         {
           label: 'New Canvas',
-          click: function() {}
+          click: function() {
+            return plane.primitives = [];
+          }
         }
       ]
     }, {
@@ -101,6 +151,11 @@ geoRender.controller('mainController', function($scope) {
       img: 'poly.png'
     }
   ];
+  $scope.bodyClick = function() {
+    if ($scope.toolstate !== 'none' && mouse.x > 150 && mouse.y < $(document).height() - 25) {
+      return $scope.toolstate = toolHandlers[$scope.toolstate].handler();
+    }
+  };
   $scope.setMenu = function(group) {
     if ($scope.menu.currentGroup === group) {
       $scope.menu.currentGroup = 'none';
@@ -113,8 +168,17 @@ geoRender.controller('mainController', function($scope) {
   $scope.setInfo = function(infotext) {
     return $scope.informator = infotext;
   };
+  $scope.setTool = function(stateid) {
+    return $scope.toolstate = stateid;
+  };
+  $scope.actionComplete = function() {
+    return $scope.toolstate = toolHandlers[$scope.toolstate].complete();
+  };
+  $scope.primitivelist = [];
   $scope.informator = '';
-  return $scope.menu = {
+  $scope.showcomplete = false;
+  $scope.toolstate = 'none';
+  $scope.menu = {
     currentGroup: 'none',
     current: [],
     list: {
@@ -122,26 +186,31 @@ geoRender.controller('mainController', function($scope) {
         {
           label: 'Point',
           info: 'Draw point',
-          img: 'point.png'
+          img: 'point.png',
+          toolstate: 'point'
         }, {
           label: 'Centroid',
           info: 'Create a point at the center of a set of points',
-          img: 'point.png'
+          img: 'point.png',
+          toolstate: 'point-centroid'
         }
       ],
       'lines': [
         {
           label: 'Line',
           info: 'Create a line from two points',
-          img: 'line.png'
+          img: 'line.png',
+          toolstate: 'line:A'
         }, {
           label: 'Parallel',
           info: 'Create a line parallel to another one passing throught a point',
-          img: 'line.png'
+          img: 'line.png',
+          toolstate: 'line-parallel:line'
         }, {
           label: 'Perpendicular',
           info: 'Create a line cprpendicular to another one passing throught a point',
-          img: 'line.png'
+          img: 'line.png',
+          toolstate: 'line-perpendicular:line'
         }
       ],
       'circles': [
@@ -171,16 +240,53 @@ geoRender.controller('mainController', function($scope) {
       ]
     }
   };
+  return $(function() {
+    var canvas, render;
+    canvas = $('#geomcanvas')[0];
+    canvas.width = $(document).width();
+    canvas.height = $(document).height();
+    $('body').on('selectstart', false);
+    $('body').mousemove(function(e) {
+      mouse.px = mouse.x;
+      mouse.py = mouse.y;
+      mouse.x = e.pageX;
+      mouse.y = e.pageY;
+      mouse.button = e.which;
+      if (mouse.button === 3 && toolHandlers._nearest._dist <= 7 && toolHandlers._nearest.isUndependant()) {
+        toolHandlers._nearest.x += mouse.x - mouse.px;
+        toolHandlers._nearest.y += mouse.y - mouse.py;
+      }
+      if (mouse.button === 2) {
+        translation.x += mouse.x - mouse.px;
+        return translation.y += mouse.y - mouse.py;
+      }
+    });
+    $(window).resize(function() {
+      canvas = $('#geomcanvas')[0];
+      canvas.width = $(document).width();
+      return canvas.height = $(document).height();
+    });
+    render = function() {
+      var g;
+      $scope.primitivelist = plane.primitives;
+      canvas = $('#geomcanvas')[0];
+      g = Graphics.createFromCanvas(canvas);
+      g.ctx.clearRect(0, 0, canvas.width, canvas.height);
+      g.ctx.translate(translation.x, translation.y);
+      plane.render(g);
+      g.ctx.translate(-translation.x, -translation.y);
+      toolHandlers._nearest = plane.getClosestTo(mouse.x - translation.x, mouse.y - translation.y);
+      if (toolHandlers[$scope.toolstate].doHighLight(toolHandlers._nearest)) {
+        g.ctx.translate(translation.x, translation.y);
+        toolHandlers._nearest.highLight(g);
+        g.ctx.translate(-translation.x, -translation.y);
+      }
+      if ($scope.toolstate !== 'none') {
+        g.setColor('#000000');
+        g.drawLine(mouse.x - 10, mouse.y, mouse.x + 10, mouse.y);
+        return g.drawLine(mouse.x, mouse.y - 10, mouse.x, mouse.y + 10);
+      }
+    };
+    return setInterval(render, 1000 / 25);
+  });
 });
-
-$(function() {
-  return $('body').on('selectstart', false);
-});
-
-render = function() {
-  var g;
-  g = Graphics.createFromCanvas('geomcanvas');
-  return plane.render(g);
-};
-
-setInterval(render, 1000 / 25);

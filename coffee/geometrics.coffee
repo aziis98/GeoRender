@@ -7,37 +7,41 @@ class GeoPlane
     render: (g) ->
         for primitive in @primitives
             primitive.render g
+        return
 
     addPrimitive: (primitive) ->
         @primitives.push primitive
 
     getClosestTo: (x, y) ->
-        for primitive in @primitives
+        bf = @primitives.slice()
+
+        for primitive in bf
             primitive._dist = primitive.distance(x, y)
 
-        @primitives.sort (a, b) ->
+        bf.sort (a, b) ->
             return a._dist - b._dist
 
-        return @primitives[0]
+        return bf[0]
 
 class PPoint
     constructor: (@x, @y) ->
-        # @twoobj.outer = Two.makeCircle(x, y, 6)
-        # @twoobj.outer.noFill()
-        # @twoobj.outer.stroke = '#000000'
-        # @twoobj.inner = Two.makeCircle(x, y, 4)
-        # @twoobj.inner.noStroke()
-        # @twoobj.inner.fill = '#000000'
+        @typename = 'PPoint'
 
     render: (g) ->
         g.setColor '#000000'
-        g.drawCircle @getX, @getY, 7
-        g.fillCircle @getX, @getY, 5
+        g.drawCircle @getX(), @getY(), 5
+        g.fillCircle @getX(), @getY(), 3
+
+    highLight: (g) ->
+        g.setColor '#ff4000'
+        g.drawCircle @getX(), @getY(), 7
 
     getX: ->
-        return (x?() ? x)
+        return (@x?() ? @x)
     getY: ->
-        return (y?() ? y)
+        return (@y?() ? @y)
+    isUndependant: ->
+        return typeof @x isnt 'function'
 
     distance: (x, y) ->
         dx = x - @getX()
@@ -46,15 +50,46 @@ class PPoint
 
 
     @getCentroid: (ptlist) ->
-        sx = ptlist[0].x
-        sy = ptlist[0].y
-
-        for i in [1..ptlist.length]
-            sx = -> (sx?() ? sx) + (ptlist[i].x?() ? ptlist[i].x)
-            sy = -> (sy?() ? sy) + (ptlist[i].y?() ? ptlist[i].y)
-
-        return new PPoint((-> sx / ptlist.length), (-> sy / ptlist.length))
+        return new PPoint(
+            (->
+                rx = 0
+                for pt in ptlist
+                    rx += pt.getX()
+                return rx / ptlist.length
+            ),
+            (->
+                ry = 0
+                for pt in ptlist
+                    ry += pt.getY()
+                return ry / ptlist.length
+            )
+        )
 
 
 exports.GeoPlane = GeoPlane
 exports.PPoint = PPoint
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#

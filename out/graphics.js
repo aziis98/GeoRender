@@ -1,33 +1,33 @@
 var Graphics;
 
 Graphics = (function() {
-  function Graphics(ctx1) {
-    this.ctx = ctx1;
+  function Graphics(ctx) {
+    this.ctx = ctx;
   }
 
   Graphics.prototype.setColor = function(color) {
-    ctx.fillStyle = color;
-    return ctx.strokeStyle = color;
+    this.ctx.fillStyle = color;
+    return this.ctx.strokeStyle = color;
   };
 
   Graphics.prototype.setLineWidth = function(linewidth) {
-    return ctx.lineWidth = linewidth;
+    return this.ctx.lineWidth = linewidth;
   };
 
   Graphics.prototype.setFont = function(fontdef) {
-    return ctx.font = fontdef;
+    return this.ctx.font = fontdef;
   };
 
   Graphics.prototype.drawArc = function(x, y, r, sAngle, eAngle) {
-    ctx.beginPath();
-    ctx.arc(x, y, r, sAngle, eAngle, true);
-    return ctx.stroke();
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, r, sAngle, eAngle, true);
+    return this.ctx.stroke();
   };
 
   Graphics.prototype.fillArc = function(x, y, r, sAngle, eAngle) {
-    ctx.beginPath();
-    ctx.arc(x, y, r, sAngle, eAngle, true);
-    return ctx.fill();
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, r, sAngle, eAngle, true);
+    return this.ctx.fill();
   };
 
   Graphics.prototype.drawCircle = function(x, y, r) {
@@ -39,52 +39,52 @@ Graphics = (function() {
   };
 
   Graphics.prototype.drawRect = function(x, y, width, height) {
-    return ctx.strokeRect(x, y, width, height);
+    return this.ctx.strokeRect(x, y, width, height);
   };
 
   Graphics.prototype.fillRect = function(x, y, width, height) {
-    return ctx.fillRect(x, y, width, height);
+    return this.ctx.fillRect(x, y, width, height);
   };
 
   Graphics.prototype.drawText = function(x, y, text) {
-    return ctx.fillText(text, x, y);
+    return this.ctx.fillText(text, x, y);
   };
 
   Graphics.prototype.drawLine = function(x1, y1, x2, y2) {
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    return ctx.stroke();
+    this.ctx.beginPath();
+    this.ctx.moveTo(x1, y1);
+    this.ctx.lineTo(x2, y2);
+    return this.ctx.stroke();
   };
 
   Graphics.prototype.drawPoly = function(ptlist) {
     var i, len, pt;
-    ctx.beginPath();
-    ctx.moveTo(ptlist[0].x, ptlist[0].y);
+    this.ctx.beginPath();
+    this.ctx.moveTo(ptlist[0].x, ptlist[0].y);
     for (i = 0, len = ptlist.length; i < len; i++) {
       pt = ptlist[i];
-      ctx.lineTo(pt.x, pt.y);
+      this.ctx.lineTo(pt.x, pt.y);
     }
-    ctx.closePath();
-    return ctx.stroke();
+    this.ctx.closePath();
+    return this.ctx.stroke();
   };
 
   Graphics.prototype.fillPoly = function(ptlist) {
     var i, len, pt;
-    ctx.beginPath();
-    ctx.moveTo(ptlist[0].x, ptlist[0].y);
+    this.ctx.beginPath();
+    this.ctx.moveTo(ptlist[0].x, ptlist[0].y);
     for (i = 0, len = ptlist.length; i < len; i++) {
       pt = ptlist[i];
-      ctx.lineTo(pt.x, pt.y);
+      this.ctx.lineTo(pt.x, pt.y);
     }
-    ctx.closePath();
-    return ctx.fill();
+    this.ctx.closePath();
+    return this.ctx.fill();
   };
 
   return Graphics;
 
 })();
 
-exports.createFromCanvas = function(canvasId) {
-  return new Graphics(document.getElementById(canvasId).getContext('2d'));
+exports.createFromCanvas = function(canvas) {
+  return new Graphics(canvas.getContext('2d'));
 };

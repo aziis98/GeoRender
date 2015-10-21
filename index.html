@@ -7,7 +7,7 @@
 
         <script src="out/app.js"></script>
     </head>
-    <body ng-controller="mainController">
+    <body ng-controller="mainController" ng-click='bodyClick()'>
         <div class="ui">
             <div class="groupbar">
                 <div class="group" ng-repeat="group in groups" ng-click="setMenu(group.id)">
@@ -16,15 +16,28 @@
             </div>
 
             <div class="toolbar" ng-if="menu.current.length > 0" ng-animate>
-                <div class="tool" ng-repeat="tool in menu.current" ng-mouseover="setInfo(tool.info)" ng-mouseleave="setInfo('')">
+                <div class="tool" ng-repeat="tool in menu.current" ng-mouseover="setInfo(tool.info)" ng-mouseleave="setInfo('')" ng-click="setTool(tool.toolstate)">
                     <img ng-src="assets/tools/{{tool.img}}">
                     <span>{{tool.label}}</span>
                 </div>
             </div>
 
-            <div class="informator" ng-if="informator != ''">
+            <div class="primitives">
+                <span class="win-title">Primitives</span>
+                <ul>
+                    <li ng-repeat="primitive in primitivelist">
+                        {{ primitive.typename }} - {{ primitive.isUndependant() ? (primitive.x + ', ' + primitive.y) : 'f(...)' }}
+                    </li>
+                </ul>
+            </div>
+
+            <!-- TODO: Show Complete condition -->
+            <div class="informator" ng-if="informator != '' || true">
                 <span class="left" ng-bind="informator"></span>
-                <span class="right"></span>
+                <span class="right">
+                    Tool State: {{ toolstate }}
+                    <span class="button" ng-click="actionComplete()">End Action</span>
+                </span>
             </div>
         </div>
 
