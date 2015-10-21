@@ -1,20 +1,30 @@
-
+# Electron
 remote = require 'remote'
+Menu = remote.require 'menu'
+MenuItem = remote.require 'menu-item'
+ipc = require 'ipc'
+
+# Angular
 angular = require 'angular'
+ngAnimate = require 'angular-animate'
+
+# Geometrics
+Graphics = require './out/graphics.js'
+geometrics = require './out/geometrics.js'
+GeoPlane = geometrics.GeoPlane
+PPoint = geometrics.PPoint
+
+# Others
 $ = require 'jquery'
 Two = require 'twojs-browserify'
 
-Menu = remote.require 'menu'
-MenuItem = remote.require 'menu-item'
 
-# --------------- jquery init ---------------
-$ ->
-    $('body').on 'selectstart', false
 
-# -------------------------------------------
 
-ngAnimate = require 'angular-animate'
 
+
+
+plane = new GeoPlane
 geoRender = angular.module 'geoRender', [ ngAnimate ]
 
 geoRender.controller 'mainController', ($scope) ->
@@ -26,7 +36,7 @@ geoRender.controller 'mainController', ($scope) ->
                 {
                     label: 'New Canvas'
                     click: ->
-                        console.log 'Created new canvas'
+
                 }
             ]
         }
@@ -70,6 +80,12 @@ geoRender.controller 'mainController', ($scope) ->
 
     Menu.setApplicationMenu Menu.buildFromTemplate template
 
+
+
+
+
+
+
     $scope.groups = [
         {
             id: 'points'
@@ -93,6 +109,11 @@ geoRender.controller 'mainController', ($scope) ->
         }
     ]
 
+
+
+
+
+
     $scope.setMenu = (group) ->
         if $scope.menu.currentGroup == group
             $scope.menu.currentGroup = 'none'
@@ -103,7 +124,6 @@ geoRender.controller 'mainController', ($scope) ->
 
     $scope.setInfo = (infotext) ->
         $scope.informator = infotext
-
 
     $scope.informator = ''
 
@@ -174,7 +194,15 @@ geoRender.controller 'mainController', ($scope) ->
 
 
 
+$ ->
+    $('body').on 'selectstart', false
 
+render = ->
+    g = Graphics.createFromCanvas 'geomcanvas'
+    plane.render(g)
+
+
+setInterval(render, 1000 / 25)
 
 
 

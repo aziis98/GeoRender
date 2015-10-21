@@ -1,22 +1,30 @@
-var $, Menu, MenuItem, Two, angular, geoRender, ngAnimate, remote;
+var $, GeoPlane, Graphics, Menu, MenuItem, PPoint, Two, angular, geoRender, geometrics, ipc, ngAnimate, plane, remote, render;
 
 remote = require('remote');
-
-angular = require('angular');
-
-$ = require('jquery');
-
-Two = require('twojs-browserify');
 
 Menu = remote.require('menu');
 
 MenuItem = remote.require('menu-item');
 
-$(function() {
-  return $('body').on('selectstart', false);
-});
+ipc = require('ipc');
+
+angular = require('angular');
 
 ngAnimate = require('angular-animate');
+
+Graphics = require('./out/graphics.js');
+
+geometrics = require('./out/geometrics.js');
+
+GeoPlane = geometrics.GeoPlane;
+
+PPoint = geometrics.PPoint;
+
+$ = require('jquery');
+
+Two = require('twojs-browserify');
+
+plane = new GeoPlane;
 
 geoRender = angular.module('geoRender', [ngAnimate]);
 
@@ -28,9 +36,7 @@ geoRender.controller('mainController', function($scope) {
       submenu: [
         {
           label: 'New Canvas',
-          click: function() {
-            return console.log('Created new canvas');
-          }
+          click: function() {}
         }
       ]
     }, {
@@ -166,3 +172,15 @@ geoRender.controller('mainController', function($scope) {
     }
   };
 });
+
+$(function() {
+  return $('body').on('selectstart', false);
+});
+
+render = function() {
+  var g;
+  g = Graphics.createFromCanvas('geomcanvas');
+  return plane.render(g);
+};
+
+setInterval(render, 1000 / 25);
