@@ -6,8 +6,10 @@
         <link rel="stylesheet" href="style.css">
 
         <script src="out/app.js"></script>
+        <script src="out/ng/ng-menu.js"></script>
+
     </head>
-    <body ng-controller="mainController" ng-click='bodyClick()'>
+    <body ng-controller="mainCtrl" ng-click='bodyClick()'>
         <div class="ui">
             <div class="groupbar">
                 <div class="group" ng-repeat="group in groups" ng-click="setMenu(group.id)">

@@ -11,7 +11,7 @@ ngAnimate = require 'angular-animate'
 # Geometrics
 Graphics = require './out/graphics.js'
 geometrics = require './out/geometrics.js'
-PPlane = geometrics.GeoPlane
+PPlane = geometrics.PPlane
 PPoint = geometrics.PPoint
 PLine = geometrics.PLine
 
@@ -21,11 +21,6 @@ Two = require 'twojs-browserify'
 
 # Fragmentation
 toolHandlers = require './out/application/toolHandler.js'
-
-
-
-
-plane = new PPlane
 
 mouse = {
     x: 0
@@ -39,58 +34,10 @@ translation = {
 
 
 geoRender = angular.module 'geoRender', [ ngAnimate ]
-geoRender.controller 'mainController', ($scope) ->
+geoRender.controller('mainCtrl', ['$rootScope', ($scope) ->
+    console.log 'Loading Main...'
 
-    template = [
-        {
-            label: 'File'
-            submenu: [
-                {
-                    label: 'New Canvas'
-                    click: ->
-                        plane.primitives = []
-                }
-            ]
-        }
-        {
-            label: 'View',
-            submenu: [
-                {
-                    label: 'Reload'
-                    accelerator: 'CmdOrCtrl+R'
-                    click: (item, focusedWindow) ->
-                        if (focusedWindow)
-                            focusedWindow.reload()
-                }
-                {
-                    label: 'Toggle Full Screen'
-                    accelerator: ( ->
-                        if (process.platform == 'darwin')
-                            return 'Ctrl+Command+F'
-                        else
-                            return 'F11'
-                            )()
-                    click: (item, focusedWindow) ->
-                        if (focusedWindow)
-                            focusedWindow.setFullScreen(!focusedWindow.isFullScreen())
-                },
-                {
-                    label: 'Toggle Developer Tools',
-                    accelerator: ( ->
-                        if (process.platform == 'darwin')
-                            return 'Alt+Command+I'
-                        else
-                            return 'Ctrl+Shift+I'
-                            )()
-                    click: (item, focusedWindow) ->
-                        if (focusedWindow)
-                            focusedWindow.toggleDevTools()
-                }
-            ]
-        }
-    ]
-
-    Menu.setApplicationMenu Menu.buildFromTemplate template
+    $scope.plane = new PPlane
 
     $scope.groups = [
         {
@@ -251,17 +198,17 @@ geoRender.controller 'mainController', ($scope) ->
             canvas.height = $(document).height()
 
         render = ->
-            $scope.primitivelist = plane.primitives
+            $scope.primitivelist = $scope.plane.primitives
 
             canvas = $('#geomcanvas')[0]
             g = Graphics.createFromCanvas canvas, {width: canvas.width, height: canvas.height}
 
             g.ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-            toolHandlers._nearest = plane.getClosestTo(mouse.x - translation.x, mouse.y - translation.y)
+            toolHandlers._nearest = $scope.plane.getClosestTo(mouse.x - translation.x, mouse.y - translation.y)
             g.translate(translation.x, translation.y)
-            plane.render g
-            for primitive in plane.primitives.slice().sort((a, b) -> a.typename.localeCompare(b.typename))
+            $scope.plane.render g
+            for primitive in $scope.plane.primitives.slice().sort((a, b) -> a.typename.localeCompare(b.typename))
                 if toolHandlers[$scope.toolstate].doHighLight(primitive) or primitive.selected
                     primitive.highLight g
             g.translate(-translation.x, -translation.y)
@@ -273,7 +220,7 @@ geoRender.controller 'mainController', ($scope) ->
                 g.drawLine(mouse.x, mouse.y - 10, mouse.x, mouse.y + 10)
 
         setInterval(render, 1000 / 25)
-
+])
 
 
 

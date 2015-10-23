@@ -1,6 +1,6 @@
 
 
-class PPlane
+exports.PPlane = class PPlane
     constructor: ->
         @primitives = []
 
@@ -23,7 +23,7 @@ class PPlane
 
         return bf
 
-class PPoint
+exports.PPoint = class PPoint
     constructor: (@x, @y) ->
         @typename = 'PPoint'
         @selected = false
@@ -71,7 +71,7 @@ class PPoint
             )
         )
 
-class PLine
+exports.PLine = class PLine
     constructor: (a, b, c) ->
         @typename = 'PLine'
         @selected = false
@@ -127,10 +127,6 @@ class PLine
         fy = -> - (l1.a() * l2.c() - l2.a() * l1.c()) / (l2.a() * l1.b() - l1.a() * l2.b())
         return new PPoint(fx, fy)
 
-
-exports.GeoPlane = GeoPlane
-exports.PPoint = PPoint
-exports.PLine = PLine
 
 
 

@@ -1,6 +1,6 @@
 var PLine, PPlane, PPoint;
 
-PPlane = (function() {
+exports.PPlane = PPlane = (function() {
   function PPlane() {
     this.primitives = [];
   }
@@ -35,7 +35,7 @@ PPlane = (function() {
 
 })();
 
-PPoint = (function() {
+exports.PPoint = PPoint = (function() {
   function PPoint(x1, y1) {
     this.x = x1;
     this.y = y1;
@@ -105,7 +105,7 @@ PPoint = (function() {
 
 })();
 
-PLine = (function() {
+exports.PLine = PLine = (function() {
   function PLine(a, b, c) {
     this.typename = 'PLine';
     this.selected = false;
@@ -189,9 +189,3 @@ PLine = (function() {
   return PLine;
 
 })();
-
-exports.GeoPlane = GeoPlane;
-
-exports.PPoint = PPoint;
-
-exports.PLine = PLine;

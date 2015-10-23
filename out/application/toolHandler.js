@@ -1,9 +1,19 @@
-var PLine, PPlane, PPoint, onPoints, ref;
+var PLine, PPlane, PPoint, geometrics, onLines, onPoints;
 
-ref = require('./out/geometrics.js'), PPlane = ref.PPlane, PPoint = ref.PPoint, PLine = ref.PLine;
+geometrics = require('../geometrics.js');
+
+PPlane = geometrics.PPlane;
+
+PPoint = geometrics.PPoint;
+
+PLine = geometrics.PLine;
 
 onPoints = function(p) {
   return p.typename === 'PPoint' && p._dist <= 7;
+};
+
+onLines = function(p) {
+  return p.typename === 'PLine' && p._dist <= 2;
 };
 
 module.exports = {
@@ -82,9 +92,7 @@ module.exports = {
       }
       return 'line-perpendicular:line';
     },
-    doHighLight: function(p) {
-      return p.typename === 'PLine' && p._dist <= 2;
-    }
+    doHighLight: onLines
   },
   'line-perpendicular:point': {
     handler: function(nearests) {
@@ -112,9 +120,7 @@ module.exports = {
       }
       return 'line-intersection:1';
     },
-    doHighLight: function(p) {
-      return p.typename === 'PLine' && p._dist <= 2;
-    }
+    doHighLight: onLines
   },
   'line-intersection:2': {
     handler: function(nearests) {
@@ -128,9 +134,7 @@ module.exports = {
       }
       return 'line-intersection:2';
     },
-    doHighLight: function(p) {
-      return p.typename === 'PLine' && p._dist <= 2;
-    }
+    doHighLight: onLines
   },
   _centroidbuff: []
 };

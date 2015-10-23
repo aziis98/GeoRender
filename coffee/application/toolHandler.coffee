@@ -1,6 +1,13 @@
-{PPlane, PPoint, PLine} = require './out/geometrics.js'
+#TODO: convert to angular file
+
+geometrics = require '../geometrics.js'
+PPlane = geometrics.PPlane
+PPoint = geometrics.PPoint
+PLine = geometrics.PLine
+
 
 onPoints = (p) -> p.typename is 'PPoint' and p._dist <= 7
+onLines = (p) -> p.typename is 'PLine' and p._dist <= 2
 
 module.exports =
     'none':
@@ -53,7 +60,7 @@ module.exports =
                 toolHandlers._linebuff = npts[0]
                 return 'line-perpendicular:point'
             return 'line-perpendicular:line'
-        doHighLight: (p) -> p.typename is 'PLine' and p._dist <= 2
+        doHighLight: onLines
 
     'line-perpendicular:point':
         handler: (nearests) ->
@@ -71,7 +78,7 @@ module.exports =
                 toolHandlers._linebuff = npts[0]
                 return 'line-intersection:2'
             return 'line-intersection:1'
-        doHighLight: (p) -> p.typename is 'PLine' and p._dist <= 2
+        doHighLight: onLines
 
     'line-intersection:2':
         handler: (nearests) ->
@@ -80,7 +87,7 @@ module.exports =
                 plane.addPrimitive PLine.getIntersection(toolHandlers._linebuff, npts[0])
                 return 'none'
             return 'line-intersection:2'
-        doHighLight: (p) -> p.typename is 'PLine' and p._dist <= 2
+        doHighLight: onLines
 
     # Buffer Variables
     _centroidbuff: []
