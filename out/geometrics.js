@@ -1,11 +1,11 @@
-var GeoPlane, PPoint;
+var PLine, PPlane, PPoint;
 
-GeoPlane = (function() {
-  function GeoPlane() {
+PPlane = (function() {
+  function PPlane() {
     this.primitives = [];
   }
 
-  GeoPlane.prototype.render = function(g) {
+  PPlane.prototype.render = function(g) {
     var i, len, primitive, ref;
     ref = this.primitives;
     for (i = 0, len = ref.length; i < len; i++) {
@@ -14,11 +14,11 @@ GeoPlane = (function() {
     }
   };
 
-  GeoPlane.prototype.addPrimitive = function(primitive) {
+  PPlane.prototype.addPrimitive = function(primitive) {
     return this.primitives.push(primitive);
   };
 
-  GeoPlane.prototype.getClosestTo = function(x, y) {
+  PPlane.prototype.getClosestTo = function(x, y) {
     var bf, i, len, primitive;
     bf = this.primitives.slice();
     for (i = 0, len = bf.length; i < len; i++) {
@@ -28,10 +28,10 @@ GeoPlane = (function() {
     bf.sort(function(a, b) {
       return a._dist - b._dist;
     });
-    return bf[0];
+    return bf;
   };
 
-  return GeoPlane;
+  return PPlane;
 
 })();
 
@@ -40,6 +40,7 @@ PPoint = (function() {
     this.x = x1;
     this.y = y1;
     this.typename = 'PPoint';
+    this.selected = false;
   }
 
   PPoint.prototype.render = function(g) {
@@ -49,8 +50,14 @@ PPoint = (function() {
   };
 
   PPoint.prototype.highLight = function(g) {
-    g.setColor('#ff4000');
-    return g.drawCircle(this.getX(), this.getY(), 7);
+    if (this.isUndependant()) {
+      g.setColor('#00b020');
+    } else {
+      g.setColor('#ff4000');
+    }
+    g.setLineWidth(2);
+    g.drawCircle(this.getX(), this.getY(), 8);
+    return g.setLineWidth(1);
   };
 
   PPoint.prototype.getX = function() {
@@ -98,6 +105,93 @@ PPoint = (function() {
 
 })();
 
+PLine = (function() {
+  function PLine(a, b, c) {
+    this.typename = 'PLine';
+    this.selected = false;
+    if (a.typename === 'PPoint') {
+      this.a = function() {
+        return b.getY() - a.getY();
+      };
+      this.b = function() {
+        return a.getX() - b.getX();
+      };
+      this.c = function() {
+        return a.getX() * b.getY() - a.getY() * b.getX();
+      };
+    } else {
+      this.a = a;
+      this.b = b;
+      this.c = c;
+    }
+  }
+
+  PLine.prototype.render = function(g) {
+    this._ty = -g.transform.y;
+    this._a = this.a();
+    this._b = this.b();
+    this._c = this.c();
+    if (this._a === 0) {
+      this._y = this._c / this._b;
+    }
+    this._x1 = (this._c - this._b * this._ty) / this._a;
+    this._x2 = (this._c - this._b * (this._ty + g.viewport.height)) / this._a;
+    g.setColor('#000000');
+    if (this._a !== 0) {
+      return g.drawLine(this._x1, this._ty, this._x2, this._ty + g.viewport.height);
+    } else {
+      return g.drawLine(-g.transform.x, this._y, -g.transform.x + g.viewport.width, this._y);
+    }
+  };
+
+  PLine.prototype.highLight = function(g) {
+    g.setColor('#ff8080');
+    g.setLineWidth(2);
+    if (this._a !== 0) {
+      g.drawLine(this._x1, this._ty, this._x2, this._ty + g.viewport.height);
+    } else {
+      g.drawLine(-g.transform.x, this._y, -g.transform.x + g.viewport.width, this._y);
+    }
+    return g.setLineWidth(1);
+  };
+
+  PLine.prototype.isUndependant = function() {
+    return false;
+  };
+
+  PLine.prototype.distance = function(x, y) {
+    var _a, _b, _c;
+    _a = this.a();
+    _b = this.b();
+    _c = this.c();
+    return Math.abs(_a * x + _b * y - _c) / Math.sqrt(_a * _a + _b * _b);
+  };
+
+  PLine.getPerpendicular = function(line, pt) {
+    return new PLine(line.b, (function() {
+      return -line.a();
+    }), (function() {
+      return pt.getX() * line.b() - pt.getY() * line.a();
+    }));
+  };
+
+  PLine.getIntersection = function(l1, l2) {
+    var fx, fy;
+    fx = function() {
+      return -(l2.b() * l1.c() - l1.b() * l2.c()) / (l2.a() * l1.b() - l1.a() * l2.b());
+    };
+    fy = function() {
+      return -(l1.a() * l2.c() - l2.a() * l1.c()) / (l2.a() * l1.b() - l1.a() * l2.b());
+    };
+    return new PPoint(fx, fy);
+  };
+
+  return PLine;
+
+})();
+
 exports.GeoPlane = GeoPlane;
 
 exports.PPoint = PPoint;
+
+exports.PLine = PLine;

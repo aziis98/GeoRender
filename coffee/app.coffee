@@ -11,18 +11,21 @@ ngAnimate = require 'angular-animate'
 # Geometrics
 Graphics = require './out/graphics.js'
 geometrics = require './out/geometrics.js'
-GeoPlane = geometrics.GeoPlane
+PPlane = geometrics.GeoPlane
 PPoint = geometrics.PPoint
+PLine = geometrics.PLine
 
 # Others
 $ = require 'jquery'
 Two = require 'twojs-browserify'
 
+# Fragmentation
+toolHandlers = require './out/application/toolHandler.js'
 
 
 
 
-plane = new GeoPlane
+plane = new PPlane
 
 mouse = {
     x: 0
@@ -33,30 +36,6 @@ translation = {
     x: 0
     y: 0
 }
-
-toolHandlers =
-    'none':
-        doHighLight: (primitive) -> primitive instanceof PPoint and primitive._dist <= 7
-    'point':
-        handler: ->
-            plane.addPrimitive new PPoint(mouse.x - translation.x, mouse.y - translation.y)
-            return 'none'
-        doHighLight: (primitive) -> false
-        complete: ->
-            return 'none'
-    'point-centroid':
-        handler: ->
-            if toolHandlers._nearest._dist <= 7
-                toolHandlers._centroidbuff.push toolHandlers._nearest
-            return 'point-centroid'
-        doHighLight: (primitive) -> primitive instanceof PPoint and primitive._dist <= 7
-        complete: ->
-            plane.addPrimitive PPoint.getCentroid toolHandlers._centroidbuff
-            toolHandlers._centroidbuff = []
-            return 'none'
-
-    # Buffer Variables
-    _centroidbuff: []
 
 
 geoRender = angular.module 'geoRender', [ ngAnimate ]
@@ -139,7 +118,7 @@ geoRender.controller 'mainController', ($scope) ->
 
     $scope.bodyClick = ->
         if $scope.toolstate != 'none' and mouse.x > 150 and mouse.y < $(document).height() - 25
-            $scope.toolstate = toolHandlers[$scope.toolstate].handler()
+            $scope.toolstate = toolHandlers[$scope.toolstate].handler(toolHandlers._nearest)
 
     $scope.setMenu = (group) ->
         if $scope.menu.currentGroup == group
@@ -157,6 +136,9 @@ geoRender.controller 'mainController', ($scope) ->
 
     $scope.actionComplete = ->
         $scope.toolstate = toolHandlers[$scope.toolstate].complete()
+
+    $scope.actionCancel = ->
+        $scope.toolstate = 'none'
 
     $scope.primitivelist = []
     $scope.informator = ''
@@ -177,6 +159,12 @@ geoRender.controller 'mainController', ($scope) ->
                     toolstate: 'point'
                 }
                 {
+                    label: 'Line Intersection'
+                    info: 'Create a point at the intersection of two lines'
+                    img: 'point.png'
+                    toolstate: 'line-intersection:1'
+                }
+                {
                     label: 'Centroid'
                     info: 'Create a point at the center of a set of points'
                     img: 'point.png'
@@ -188,7 +176,7 @@ geoRender.controller 'mainController', ($scope) ->
                     label: 'Line'
                     info: 'Create a line from two points'
                     img: 'line.png'
-                    toolstate: 'line:A'
+                    toolstate: 'line:1'
                 }
                 {
                     label: 'Parallel'
@@ -241,13 +229,16 @@ geoRender.controller 'mainController', ($scope) ->
         $('body').mousemove (e) ->
             mouse.px = mouse.x
             mouse.py = mouse.y
-            mouse.x = e.pageX
+            mouse.x = Math.min(e.pageX, canvas.width - 300)
             mouse.y = e.pageY
             mouse.button = e.which
 
-            if mouse.button == 3 and toolHandlers._nearest._dist <= 7 and toolHandlers._nearest.isUndependant()
-                toolHandlers._nearest.x += mouse.x - mouse.px
-                toolHandlers._nearest.y += mouse.y - mouse.py
+            if toolHandlers._nearest
+                np = toolHandlers._nearest.filter((p) -> p.isUndependant())
+
+                if mouse.button == 3 and np[0]._dist <= 7
+                    np[0].x += mouse.x - mouse.px
+                    np[0].y += mouse.y - mouse.py
 
             if mouse.button == 2
                 translation.x += mouse.x - mouse.px
@@ -263,19 +254,18 @@ geoRender.controller 'mainController', ($scope) ->
             $scope.primitivelist = plane.primitives
 
             canvas = $('#geomcanvas')[0]
-            g = Graphics.createFromCanvas canvas
+            g = Graphics.createFromCanvas canvas, {width: canvas.width, height: canvas.height}
 
             g.ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-            g.ctx.translate(translation.x, translation.y)
-            plane.render(g)
-            g.ctx.translate(-translation.x, -translation.y)
-
             toolHandlers._nearest = plane.getClosestTo(mouse.x - translation.x, mouse.y - translation.y)
-            if toolHandlers[$scope.toolstate].doHighLight(toolHandlers._nearest)
-                g.ctx.translate(translation.x, translation.y)
-                toolHandlers._nearest.highLight(g)
-                g.ctx.translate(-translation.x, -translation.y)
+            g.translate(translation.x, translation.y)
+            plane.render g
+            for primitive in plane.primitives.slice().sort((a, b) -> a.typename.localeCompare(b.typename))
+                if toolHandlers[$scope.toolstate].doHighLight(primitive) or primitive.selected
+                    primitive.highLight g
+            g.translate(-translation.x, -translation.y)
+
 
             if $scope.toolstate != 'none'
                 g.setColor('#000000')

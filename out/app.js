@@ -1,4 +1,4 @@
-var $, GeoPlane, Graphics, Menu, MenuItem, PPoint, Two, angular, geoRender, geometrics, ipc, mouse, ngAnimate, plane, remote, toolHandlers, translation;
+var $, Graphics, Menu, MenuItem, PLine, PPlane, PPoint, Two, angular, geoRender, geometrics, ipc, mouse, ngAnimate, plane, remote, toolHandlers, translation;
 
 remote = require('remote');
 
@@ -16,15 +16,19 @@ Graphics = require('./out/graphics.js');
 
 geometrics = require('./out/geometrics.js');
 
-GeoPlane = geometrics.GeoPlane;
+PPlane = geometrics.GeoPlane;
 
 PPoint = geometrics.PPoint;
+
+PLine = geometrics.PLine;
 
 $ = require('jquery');
 
 Two = require('twojs-browserify');
 
-plane = new GeoPlane;
+toolHandlers = require('./out/application/toolHandler.js');
+
+plane = new PPlane;
 
 mouse = {
   x: 0,
@@ -35,43 +39,6 @@ mouse = {
 translation = {
   x: 0,
   y: 0
-};
-
-toolHandlers = {
-  'none': {
-    doHighLight: function(primitive) {
-      return primitive instanceof PPoint && primitive._dist <= 7;
-    }
-  },
-  'point': {
-    handler: function() {
-      plane.addPrimitive(new PPoint(mouse.x - translation.x, mouse.y - translation.y));
-      return 'none';
-    },
-    doHighLight: function(primitive) {
-      return false;
-    },
-    complete: function() {
-      return 'none';
-    }
-  },
-  'point-centroid': {
-    handler: function() {
-      if (toolHandlers._nearest._dist <= 7) {
-        toolHandlers._centroidbuff.push(toolHandlers._nearest);
-      }
-      return 'point-centroid';
-    },
-    doHighLight: function(primitive) {
-      return primitive instanceof PPoint && primitive._dist <= 7;
-    },
-    complete: function() {
-      plane.addPrimitive(PPoint.getCentroid(toolHandlers._centroidbuff));
-      toolHandlers._centroidbuff = [];
-      return 'none';
-    }
-  },
-  _centroidbuff: []
 };
 
 geoRender = angular.module('geoRender', [ngAnimate]);
@@ -153,7 +120,7 @@ geoRender.controller('mainController', function($scope) {
   ];
   $scope.bodyClick = function() {
     if ($scope.toolstate !== 'none' && mouse.x > 150 && mouse.y < $(document).height() - 25) {
-      return $scope.toolstate = toolHandlers[$scope.toolstate].handler();
+      return $scope.toolstate = toolHandlers[$scope.toolstate].handler(toolHandlers._nearest);
     }
   };
   $scope.setMenu = function(group) {
@@ -174,6 +141,9 @@ geoRender.controller('mainController', function($scope) {
   $scope.actionComplete = function() {
     return $scope.toolstate = toolHandlers[$scope.toolstate].complete();
   };
+  $scope.actionCancel = function() {
+    return $scope.toolstate = 'none';
+  };
   $scope.primitivelist = [];
   $scope.informator = '';
   $scope.showcomplete = false;
@@ -189,6 +159,11 @@ geoRender.controller('mainController', function($scope) {
           img: 'point.png',
           toolstate: 'point'
         }, {
+          label: 'Line Intersection',
+          info: 'Create a point at the intersection of two lines',
+          img: 'point.png',
+          toolstate: 'line-intersection:1'
+        }, {
           label: 'Centroid',
           info: 'Create a point at the center of a set of points',
           img: 'point.png',
@@ -200,7 +175,7 @@ geoRender.controller('mainController', function($scope) {
           label: 'Line',
           info: 'Create a line from two points',
           img: 'line.png',
-          toolstate: 'line:A'
+          toolstate: 'line:1'
         }, {
           label: 'Parallel',
           info: 'Create a line parallel to another one passing throught a point',
@@ -247,14 +222,20 @@ geoRender.controller('mainController', function($scope) {
     canvas.height = $(document).height();
     $('body').on('selectstart', false);
     $('body').mousemove(function(e) {
+      var np;
       mouse.px = mouse.x;
       mouse.py = mouse.y;
-      mouse.x = e.pageX;
+      mouse.x = Math.min(e.pageX, canvas.width - 300);
       mouse.y = e.pageY;
       mouse.button = e.which;
-      if (mouse.button === 3 && toolHandlers._nearest._dist <= 7 && toolHandlers._nearest.isUndependant()) {
-        toolHandlers._nearest.x += mouse.x - mouse.px;
-        toolHandlers._nearest.y += mouse.y - mouse.py;
+      if (toolHandlers._nearest) {
+        np = toolHandlers._nearest.filter(function(p) {
+          return p.isUndependant();
+        });
+        if (mouse.button === 3 && np[0]._dist <= 7) {
+          np[0].x += mouse.x - mouse.px;
+          np[0].y += mouse.y - mouse.py;
+        }
       }
       if (mouse.button === 2) {
         translation.x += mouse.x - mouse.px;
@@ -267,20 +248,27 @@ geoRender.controller('mainController', function($scope) {
       return canvas.height = $(document).height();
     });
     render = function() {
-      var g;
+      var g, i, len, primitive, ref;
       $scope.primitivelist = plane.primitives;
       canvas = $('#geomcanvas')[0];
-      g = Graphics.createFromCanvas(canvas);
+      g = Graphics.createFromCanvas(canvas, {
+        width: canvas.width,
+        height: canvas.height
+      });
       g.ctx.clearRect(0, 0, canvas.width, canvas.height);
-      g.ctx.translate(translation.x, translation.y);
-      plane.render(g);
-      g.ctx.translate(-translation.x, -translation.y);
       toolHandlers._nearest = plane.getClosestTo(mouse.x - translation.x, mouse.y - translation.y);
-      if (toolHandlers[$scope.toolstate].doHighLight(toolHandlers._nearest)) {
-        g.ctx.translate(translation.x, translation.y);
-        toolHandlers._nearest.highLight(g);
-        g.ctx.translate(-translation.x, -translation.y);
+      g.translate(translation.x, translation.y);
+      plane.render(g);
+      ref = plane.primitives.slice().sort(function(a, b) {
+        return a.typename.localeCompare(b.typename);
+      });
+      for (i = 0, len = ref.length; i < len; i++) {
+        primitive = ref[i];
+        if (toolHandlers[$scope.toolstate].doHighLight(primitive) || primitive.selected) {
+          primitive.highLight(g);
+        }
       }
+      g.translate(-translation.x, -translation.y);
       if ($scope.toolstate !== 'none') {
         g.setColor('#000000');
         g.drawLine(mouse.x - 10, mouse.y, mouse.x + 10, mouse.y);

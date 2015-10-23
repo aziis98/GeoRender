@@ -23,9 +23,13 @@
             </div>
 
             <div class="primitives">
-                <span class="win-title">Primitives</span>
+                <h1>Primitives</h1>
                 <ul>
-                    <li ng-repeat="primitive in primitivelist">
+                    <li ng-repeat="primitive in primitivelist"
+                            ng-mouseenter="selectedIndex = $index"
+                            ng-mouseleave="selectedIndex = -1"
+                            ng-click="primitive.selected = !primitive.selected"
+                            ng-class="{selected: primitive.selected}">
                         {{ primitive.typename }} - {{ primitive.isUndependant() ? (primitive.x + ', ' + primitive.y) : 'f(...)' }}
                     </li>
                 </ul>
@@ -37,6 +41,8 @@
                 <span class="right">
                     Tool State: {{ toolstate }}
                     <span class="button" ng-click="actionComplete()">End Action</span>
+                    <span class="spacer"></span>
+                    <span class="button" ng-click="actionCancel()">Cancel Action</span>
                 </span>
             </div>
         </div>

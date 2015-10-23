@@ -1,6 +1,16 @@
 class Graphics
-    constructor: (@ctx) ->
+    constructor: (@ctx, @viewport) ->
+        @transform = {
+            x: 0
+            y: 0
+            rotation: 0
+            scale: 1
+        }
 
+    translate: (dx, dy) ->
+        @transform.x += dx
+        @transform.y += dy
+        @ctx.translate(dx, dy)
 
     setColor: (color) ->
         @ctx.fillStyle = color
@@ -60,8 +70,8 @@ class Graphics
         @ctx.closePath()
         @ctx.fill()
 
-exports.createFromCanvas = (canvas) ->
-        return new Graphics canvas.getContext('2d')
+exports.createFromCanvas = (canvas, viewport) ->
+        return new Graphics(canvas.getContext('2d'), viewport)
 
 
 

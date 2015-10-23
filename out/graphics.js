@@ -1,9 +1,22 @@
 var Graphics;
 
 Graphics = (function() {
-  function Graphics(ctx) {
+  function Graphics(ctx, viewport1) {
     this.ctx = ctx;
+    this.viewport = viewport1;
+    this.transform = {
+      x: 0,
+      y: 0,
+      rotation: 0,
+      scale: 1
+    };
   }
+
+  Graphics.prototype.translate = function(dx, dy) {
+    this.transform.x += dx;
+    this.transform.y += dy;
+    return this.ctx.translate(dx, dy);
+  };
 
   Graphics.prototype.setColor = function(color) {
     this.ctx.fillStyle = color;
@@ -85,6 +98,6 @@ Graphics = (function() {
 
 })();
 
-exports.createFromCanvas = function(canvas) {
-  return new Graphics(canvas.getContext('2d'));
+exports.createFromCanvas = function(canvas, viewport) {
+  return new Graphics(canvas.getContext('2d'), viewport);
 };

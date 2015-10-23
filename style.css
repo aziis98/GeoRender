@@ -27,12 +27,15 @@ span .button:hover {
 	background: rgba(222, 222, 222, 0.9);
 }
 
-span.win-title {
-	font-size: 18px;
+h1 {
+	font-size: 16px;
 	border-bottom: 1px solid #f0f0f0;
 	padding: 5px;
+	padding-top: 0px;
+	margin-top: 3px;
 	text-align: center;
 	display: block;
+	font-weight: normal;
 }
 
 .ui {
@@ -55,27 +58,41 @@ span.win-title {
 
 .groupbar {
 	padding-top: 15px;
-	padding-bottom: 400px;
+	padding-bottom: 25px;
 }
 
 .toolbar {
 	text-align: center;
 	width: 100px;
 	margin-top: 25px;
-	height: 450px;
+	height: 250px;
 }
 
 .primitives {
-	height: 650px;
+	margin-top: 0;
+	height: 100vh;
 	border-left: 1px solid #F0F0F0;
 	float: right;
-	width: 200px;
+	width: 350px;
 }
 
 .primitives ul {
 	list-style-type: none;
 	font-size: 13px;
 	margin-left: -20px;
+}
+
+.primitives ul li {
+	margin-left: -20px;
+	padding-left: 20px;
+}
+
+.primitives ul li:hover {
+	background: rgba(235, 235, 235, 0.9);
+}
+
+.primitives ul li.selected {
+	background: rgba(222, 222, 222, 0.9);
 }
 
 @keyframes toolbar_open {
@@ -153,6 +170,10 @@ span.win-title {
 
 .informator .right {
 	float: right;
+}
+
+.informator .right .spacer {
+	width: 20px;
 }
 
 #geomcanvas {
